@@ -15,7 +15,7 @@
 
 <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="700.0" prefWidth="900.0" rotateGraphic="true" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="CSC227_Project.Controller">
   <tabs>
-    <Tab text="SRTF">
+    <Tab fx:id="SRTF_Tab" text="SRTF">
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
@@ -32,18 +32,18 @@
                         <RowConstraints maxHeight="371.0" minHeight="10.0" prefHeight="371.0" vgrow="SOMETIMES" />
                      </rowConstraints>
                      <children>
-                        <Button fx:id="SRTF_File_Button" mnemonicParsing="false" onAction="#fileChooser" text="Choose file &amp; Run" GridPane.columnIndex="1" />
+                        <Button fx:id="SRTF_File_Button" mnemonicParsing="false" onAction="#SRTFFileChooser" text="Choose file &amp; Run" GridPane.columnIndex="1" />
                         <Label text="Input your file" />
                         <Label fx:id="SRTF_File_Label" prefHeight="17.0" prefWidth="264.0" text="There is no file selected" GridPane.columnIndex="2">
                            <GridPane.margin>
                               <Insets left="5.0" />
                            </GridPane.margin>
                         </Label>
-                        <TableView fx:id="SRTF_Table" prefHeight="277.0" prefWidth="358.0" GridPane.columnIndex="3" GridPane.rowSpan="2">
+                        <TableView fx:id="SRTF_Table" editable="true" prefHeight="277.0" prefWidth="358.0" GridPane.columnIndex="3" GridPane.rowSpan="2">
                            <columns>
-                              <TableColumn prefWidth="88.0" text="PID" />
-                              <TableColumn prefWidth="122.0" text="Arrival Time" />
-                              <TableColumn prefWidth="124.0" text="Burst Time" />
+                              <TableColumn fx:id="SRTF_PID" prefWidth="88.0" text="PID" />
+                              <TableColumn fx:id="SRTF_AT" prefWidth="122.0" text="Arrival_Time" />
+                              <TableColumn fx:id="SRTF_BT" prefWidth="124.0" text="Burst_Time" />
                            </columns>
                         </TableView>
                      </children>
@@ -51,7 +51,7 @@
                </children></AnchorPane>
       </content>
     </Tab>
-      <Tab text="Priority">
+      <Tab fx:id="Priority_Tab" text="Priority">
           <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
@@ -87,7 +87,7 @@
                </children></AnchorPane>
           </content>
       </Tab>
-      <Tab text="RR">
+      <Tab fx:id="RR_Tab" text="RR">
         <content>
           <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
