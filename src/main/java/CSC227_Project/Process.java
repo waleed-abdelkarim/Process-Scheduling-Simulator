@@ -4,6 +4,8 @@ public  class Process {
     String pid; // Process ID
     int at; // Arrival Time
     int bt; // Burst Time
+    int wt;
+    int tat;
 
     public Process(String pid, int at, int bt) {
         this.pid = pid;
@@ -21,6 +23,22 @@ public  class Process {
 
     public int getBt() {
         return bt;
+    }
+
+    public int getWt() {
+        return wt;
+    }
+
+    public void setWt(int wt) {
+        this.wt = wt;
+    }
+
+    public int getTat() {
+        return tat;
+    }
+
+    public void setTat(int tat) {
+        this.tat = tat;
     }
 
     @Override

@@ -19,7 +19,7 @@
       <content>
         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                <children>
-                  <GridPane alignment="TOP_CENTER" layoutX="8.0" layoutY="5.0" prefHeight="656.0" prefWidth="870.0">
+                  <GridPane alignment="TOP_CENTER" layoutX="6.0" layoutY="2.0" prefHeight="659.0" prefWidth="872.0">
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="337.0" minWidth="10.0" prefWidth="93.0" />
                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="390.0" minWidth="0.0" prefWidth="133.0" />
@@ -28,6 +28,7 @@
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints maxHeight="50.0" minHeight="10.0" prefHeight="45.0" vgrow="SOMETIMES" />
+                        <RowConstraints maxHeight="103.0" minHeight="0.0" prefHeight="19.0" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="103.0" minHeight="0.0" prefHeight="19.0" vgrow="SOMETIMES" />
                         <RowConstraints maxHeight="371.0" minHeight="10.0" prefHeight="371.0" vgrow="SOMETIMES" />
                      </rowConstraints>
@@ -39,11 +40,13 @@
                               <Insets left="5.0" />
                            </GridPane.margin>
                         </Label>
-                        <TableView fx:id="SRTF_Table" editable="true" prefHeight="277.0" prefWidth="358.0" GridPane.columnIndex="3" GridPane.rowSpan="2">
+                        <TableView fx:id="SRTF_Table" editable="true" prefHeight="277.0" prefWidth="358.0" GridPane.columnIndex="2" GridPane.columnSpan="2" GridPane.rowIndex="2">
                            <columns>
                               <TableColumn fx:id="SRTF_PID" prefWidth="88.0" text="PID" />
-                              <TableColumn fx:id="SRTF_AT" prefWidth="122.0" text="Arrival_Time" />
-                              <TableColumn fx:id="SRTF_BT" prefWidth="124.0" text="Burst_Time" />
+                              <TableColumn fx:id="SRTF_AT" prefWidth="122.0" text="Arrival Time" />
+                              <TableColumn fx:id="SRTF_BT" prefWidth="124.0" text="Burst Time" />
+                              <TableColumn fx:id="SRTF_WT" prefWidth="124.0" text="Waiting Time" />
+                              <TableColumn fx:id="SRTF_TAT" prefWidth="124.0" text="Turn Around Time" />
                            </columns>
                         </TableView>
                      </children>

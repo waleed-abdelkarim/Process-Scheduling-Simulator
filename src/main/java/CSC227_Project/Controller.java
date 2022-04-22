@@ -12,7 +12,9 @@ import javafx.stage.FileChooser;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import java.io.File;
@@ -30,12 +32,18 @@ public class Controller implements Initializable {
     private TableColumn<Process, Integer> SRTF_AT;
     @FXML
     private TableColumn<Process, Integer> SRTF_BT;
+    @FXML
+    private TableColumn<Process, Integer> SRTF_WT;
+    @FXML
+    private TableColumn<Process, Integer> SRTF_TAT;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         SRTF_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
         SRTF_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("at"));
         SRTF_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("bt"));
+        SRTF_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("wt"));
+        SRTF_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("tat"));
     }
 
     Methods method = new Methods();
@@ -52,9 +60,13 @@ public class Controller implements Initializable {
         File file = fc.showOpenDialog(null);
         try {
             method.readForSRTF(file.toPath().toString());
+            method.findavgTime();
+            SRTF_Table.getItems().addAll(method.processesSRTF);
         } catch (Exception e) {
+            e.printStackTrace();
             SRTF_File_Label.setText("No File Selected");
         }
+
     }
 
     /**
@@ -101,7 +113,7 @@ public class Controller implements Initializable {
                         bt = Integer.parseInt(process[2]);
                         Process p = new Process(pid, at, bt);
                         processesSRTF.add(p);
-                        SRTF_Table.getItems().add(p);
+
                         successNum++;
                         counter++;
                     } catch (Exception ignored) {
@@ -200,108 +212,120 @@ public class Controller implements Initializable {
 
         /* SRTF **/
 
-        /*
-         static void findWaitingTime(Process proc[], int n, int wt[]) {
-         int rt[] = new int[n];
 
-         // Copy the burst time into rt[]
-         for (int i = 0; i < n; i++)
-         rt[i] = proc[i].bt;
+        void findWaitingTime(ArrayList<Integer> waitingTime) {
+            LinkedList<Integer> remainingTime = new LinkedList<>();
 
-         int complete = 0, t = 0, minm = Integer.MAX_VALUE;
-         int shortest = 0, finish_time;
-         boolean check = false;
+            // Copy the burst time into remainingTime
+            for (int i = 0; i < processesSRTF.size(); i++)
+                remainingTime.add(processesSRTF.get(i).getBt());
 
-         // Process until all processes gets
-         // completed
-         while (complete != n) {
+            int complete = 0, t = 0, minm = Integer.MAX_VALUE;
+            int shortest = 0, finish_time;
+            boolean check = false;
 
-         // Find process with minimum
-         // remaining time among the
-         // processes that arrives till the
-         // current time`
-         for (int j = 0; j < n; j++) {
-         if ((proc[j].art <= t) && (rt[j] < minm) && rt[j] > 0) {
-         minm = rt[j];
-         shortest = j;
-         check = true;
-         }
-         }
+            // Process until all processes gets completed
+            while (complete != processesSRTF.size()) {
 
-         if (!check) {
-         t++;
-         continue;
-         }
+                // Find process with minimum
+                // remaining time among the
+                // processes that arrives till the
+                // current time`
+                for (int i = 0; i < processesSRTF.size(); i++) {
+                    if ((processesSRTF.get(i).getAt() <= t) && (remainingTime.get(i) < minm) && remainingTime.get(i) > 0) {
+                        minm = remainingTime.get(i);
+                        shortest = i;
+                        check = true;
+                    }
+                }
 
-         // Reduce remaining time by one
-         rt[shortest]--;
+                if (!check) {
+                    t++;
+                    continue;
+                }
 
-         // Update minimum
-         minm = rt[shortest];
-         if (minm == 0)
-         minm = Integer.MAX_VALUE;
+                // Reduce remaining time by one
+                remainingTime.set(shortest,remainingTime.get(shortest)-1);
 
-         // If a process gets completely
-         // executed
-         if (rt[shortest] == 0) {
+                // Update minimum
+                minm = remainingTime.get(shortest);
+                if (minm == 0)
+                    minm = Integer.MAX_VALUE;
 
-         // Increment complete
-         complete++;
-         check = false;
+                // If a process gets completely
+                // executed
+                if (remainingTime.get(shortest) == 0) {
 
-         // Find finish time of current
-         // process
-         finish_time = t + 1;
+                    // Increment complete
+                    complete++;
+                    check = false;
 
-         // Calculate waiting time
-         wt[shortest] = finish_time - proc[shortest].bt - proc[shortest].art;
+                    // Find finish time of current
+                    // process
+                    finish_time = t + 1;
 
-         if (wt[shortest] < 0)
-         wt[shortest] = 0;
-         }
-         // Increment time
-         t++;
-         }
-         }
+                    // Calculate waiting time
+                    int wt = finish_time - processesSRTF.get(shortest).getBt() - processesSRTF.get(shortest).getAt();
+                    System.out.println(processesSRTF.get(shortest).getPid() +"----"+wt);
+
+                    waitingTime.add(shortest, wt);
+                    processesSRTF.get(shortest).setWt(wt);
+
+                    if (waitingTime.get(shortest) < 0)
+                        waitingTime.set(shortest,0);
+                }
+                // Increment time
+                t++;
+            }
+        }
 
 
-         // Method to calculate turn around time
-         static void findTurnAroundTime(Process proc[], int n, int wt[], int tat[]) {
-         // calculating turnaround time by adding
-         // bt[i] + wt[i]
-         for (int i = 0; i < n; i++)
-         tat[i] = proc[i].bt + wt[i];
-         }
+        // Method to calculate turn around time
+        void findTurnAroundTime(ArrayList<Integer> TurnAroundTime) {
+            // calculating turnaround time by adding
+            // bt[i] + wt[i]
+            int tat;
+            for (int i = 0; i < processesSRTF.size(); i++) {
+                tat = processesSRTF.get(i).getBt() + processesSRTF.get(i).getWt();
+                processesSRTF.get(i).setTat(tat);
+                TurnAroundTime.set(i,tat);
+            }
+        }
 
-         // Method to calculate average time
-         static void findavgTime(Process proc[], int n) {
-         int wt[] = new int[n], tat[] = new int[n];
-         int total_wt = 0, total_tat = 0;
+        // Method to calculate average time
+        void findavgTime() {
+            ArrayList<Integer> waitingTime = new ArrayList<>(processesSRTF.size());
+            ArrayList<Integer> TurnAroundTime =new ArrayList<>(processesSRTF.size());
+            for (int i =0;i<processesSRTF.size();i++){
+                waitingTime.add(0);
+                TurnAroundTime.add(0);
+            }
+            int total_wt = 0, total_tat = 0;
 
-         // Function to find waiting time of all
-         // processes
-         findWaitingTime(proc, n, wt);
+            // Function to find waiting time of all
+            // processes
+            findWaitingTime(waitingTime);
 
-         // Function to find turn around time for
-         // all processes
-         findTurnAroundTime(proc, n, wt, tat);
+            // Function to find turn around time for
+            // all processes
+            findTurnAroundTime(TurnAroundTime);
 
-         // Display processes along with all
-         // details
-         System.out.println("Processes " + " Burst time " + " Waiting time " + " Turn around time");
+            // Display processes along with all
+            // details
+//            System.out.println("Processes " + " Burst time " + " Waiting time " + " Turn around time");
 
-         // Calculate total waiting time and
-         // total turnaround time
-         for (int i = 0; i < n; i++) {
-         total_wt = total_wt + wt[i];
-         total_tat = total_tat + tat[i];
-         System.out.println(" " + proc[i].pid + "\t\t" + proc[i].bt + "\t\t " + wt[i] + "\t\t" + tat[i]);
-         }
+            // Calculate total waiting time and
+            // total turnaround time
+//            for (int i = 0; i < n; i++) {
+//                total_wt = total_wt + wt[i];
+//                total_tat = total_tat + tat[i];
+//                System.out.println(" " + proc[i].pid + "\t\t" + proc[i].bt + "\t\t " + wt[i] + "\t\t" + tat[i]);
+//            }
 
-         System.out.println("Average waiting time = " + (float) total_wt / (float) n);
-         System.out.println("Average turn around time = " + (float) total_tat / (float) n);
-         }
-         **/
+//            System.out.println("Average waiting time = " + (float) total_wt / (float) n);
+//            System.out.println("Average turn around time = " + (float) total_tat / (float) n);
+        }
+
 
 
         /* Round Robin **/
