@@ -4,6 +4,7 @@ module CSC227_Project {
     requires jfreechart;
     requires java.desktop;
     requires jcommon;
+    requires javafx.swing;
 
 
     opens CSC227_Project to javafx.fxml;
