@@ -8,26 +8,27 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.ResourceBundle;
 
-import java.io.File;
-
 public class Controller implements Initializable {
-
     @FXML
     private Label SRTF_File_Label;
     @FXML
-    private TableView<Process> SRTF_Table = new TableView<Process>();
-    ;
+    private Label SRTF_AWT_Label;
     @FXML
-    private TableColumn<Process, String> SRTF_PID;
+    private Label SRTF_ATAT_Label;
+    @FXML
+    private TableView<Process> SRTF_Input_Table = new TableView<Process>();
+    @FXML
+    private TableView<Process> SRTF_Output_Table = new TableView<Process>();
+    @FXML
+    private TableColumn<Process, String> SRTF_Output_PID;
+    @FXML
+    private TableColumn<Process, String> SRTF_Input_PID;
     @FXML
     private TableColumn<Process, Integer> SRTF_AT;
     @FXML
@@ -39,12 +40,14 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        SRTF_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
+        SRTF_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
+        SRTF_Output_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
         SRTF_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("at"));
         SRTF_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("bt"));
         SRTF_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("wt"));
         SRTF_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("tat"));
-    }
+
+        }
 
     Methods method = new Methods();
 
@@ -61,7 +64,8 @@ public class Controller implements Initializable {
         try {
             method.readForSRTF(file.toPath().toString());
             method.findavgTime();
-            SRTF_Table.getItems().addAll(method.processesSRTF);
+            SRTF_Input_Table.getItems().addAll(method.processesSRTF);
+            SRTF_Output_Table.getItems().addAll(method.processesSRTF);
         } catch (Exception e) {
             e.printStackTrace();
             SRTF_File_Label.setText("No File Selected");
@@ -113,7 +117,6 @@ public class Controller implements Initializable {
                         bt = Integer.parseInt(process[2]);
                         Process p = new Process(pid, at, bt);
                         processesSRTF.add(p);
-
                         successNum++;
                         counter++;
                     } catch (Exception ignored) {
@@ -214,11 +217,10 @@ public class Controller implements Initializable {
 
 
         void findWaitingTime(ArrayList<Integer> waitingTime) {
-            LinkedList<Integer> remainingTime = new LinkedList<>();
+           LinkedList<Integer> remainingTime = new LinkedList<>();
 
             // Copy the burst time into remainingTime
-            for (int i = 0; i < processesSRTF.size(); i++)
-                remainingTime.add(processesSRTF.get(i).getBt());
+            for (Process process : processesSRTF) remainingTime.add(process.getBt());
 
             int complete = 0, t = 0, minm = Integer.MAX_VALUE;
             int shortest = 0, finish_time;
@@ -227,10 +229,7 @@ public class Controller implements Initializable {
             // Process until all processes gets completed
             while (complete != processesSRTF.size()) {
 
-                // Find process with minimum
-                // remaining time among the
-                // processes that arrives till the
-                // current time`
+                // Find process with minimum remaining time among the processes that arrives till the current time`
                 for (int i = 0; i < processesSRTF.size(); i++) {
                     if ((processesSRTF.get(i).getAt() <= t) && (remainingTime.get(i) < minm) && remainingTime.get(i) > 0) {
                         minm = remainingTime.get(i);
@@ -238,39 +237,27 @@ public class Controller implements Initializable {
                         check = true;
                     }
                 }
-
                 if (!check) {
                     t++;
                     continue;
                 }
-
                 // Reduce remaining time by one
                 remainingTime.set(shortest,remainingTime.get(shortest)-1);
-
                 // Update minimum
                 minm = remainingTime.get(shortest);
                 if (minm == 0)
                     minm = Integer.MAX_VALUE;
-
-                // If a process gets completely
-                // executed
+                // If a process gets completely executed
                 if (remainingTime.get(shortest) == 0) {
-
                     // Increment complete
                     complete++;
                     check = false;
-
-                    // Find finish time of current
-                    // process
+                    // Find finish time of current process
                     finish_time = t + 1;
-
                     // Calculate waiting time
                     int wt = finish_time - processesSRTF.get(shortest).getBt() - processesSRTF.get(shortest).getAt();
-                    System.out.println(processesSRTF.get(shortest).getPid() +"----"+wt);
-
-                    waitingTime.add(shortest, wt);
+                    waitingTime.set(shortest, wt);
                     processesSRTF.get(shortest).setWt(wt);
-
                     if (waitingTime.get(shortest) < 0)
                         waitingTime.set(shortest,0);
                 }
@@ -309,21 +296,15 @@ public class Controller implements Initializable {
             // Function to find turn around time for
             // all processes
             findTurnAroundTime(TurnAroundTime);
-
-            // Display processes along with all
-            // details
-//            System.out.println("Processes " + " Burst time " + " Waiting time " + " Turn around time");
-
-            // Calculate total waiting time and
-            // total turnaround time
-//            for (int i = 0; i < n; i++) {
-//                total_wt = total_wt + wt[i];
-//                total_tat = total_tat + tat[i];
-//                System.out.println(" " + proc[i].pid + "\t\t" + proc[i].bt + "\t\t " + wt[i] + "\t\t" + tat[i]);
-//            }
-
-//            System.out.println("Average waiting time = " + (float) total_wt / (float) n);
-//            System.out.println("Average turn around time = " + (float) total_tat / (float) n);
+            //             Calculate total waiting time and
+//             total turnaround time
+            for (int i = 0; i < processesSRTF.size(); i++) {
+                total_wt += waitingTime.get(i);
+                System.out.print(waitingTime.get(i) + ",     ");
+                total_tat += TurnAroundTime.get(i);
+            }
+            SRTF_AWT_Label.setText(SRTF_AWT_Label.getText() + (double) total_wt / (double) processesSRTF.size() +" ms");
+            SRTF_ATAT_Label.setText(SRTF_ATAT_Label.getText() + (double) total_tat / (double) processesSRTF.size() +" ms");
         }
 
 
