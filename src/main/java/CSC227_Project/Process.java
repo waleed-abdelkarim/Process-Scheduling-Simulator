@@ -1,52 +1,82 @@
 package CSC227_Project;
 
 public  class Process {
-    String pid; // Process ID
-    int at; // Arrival Time
-    int bt; // Burst Time
-    int wt;
-    int tat;
+    String pID; // Process ID
+    int arrivalTime; // Arrival Time
+    int burstTime; // Burst Time
+    int waitingTime;
+    int turnAroundTime;
+    int completedTime;
 
-    public Process(String pid, int at, int bt) {
-        this.pid = pid;
-        this.at = at;
-        this.bt = bt;
+    public Process(String pID, int arrivalTime, int burstTime) {
+        this.pID = pID;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
     }
 
-    public String getPid() {
-        return pid;
+    public Process(String pID, int burstTime) {
+        this.pID = pID;
+        this.burstTime = burstTime;
     }
 
-    public int getAt() {
-        return at;
+
+    public String getPID() {
+        return pID;
     }
 
-    public int getBt() {
-        return bt;
+    public void getPID(String pID) {
+        this.pID = pID;
     }
 
-    public int getWt() {
-        return wt;
+    public int getArrivalTime() {
+        return arrivalTime;
     }
 
-    public void setWt(int wt) {
-        this.wt = wt;
+    public void setArrivalTime(int arrivalTime) {
+        this.arrivalTime = arrivalTime;
     }
 
-    public int getTat() {
-        return tat;
+    public int getBurstTime() {
+        return burstTime;
     }
 
-    public void setTat(int tat) {
-        this.tat = tat;
+    public void setBurstTime(int burstTime) {
+        this.burstTime = burstTime;
+    }
+
+    public int getWaitingTime() {
+        return waitingTime;
+    }
+
+    public void setWaitingTime(int waitingTime) {
+        this.waitingTime = waitingTime;
+    }
+
+    public int getTurnAroundTime() {
+        return turnAroundTime;
+    }
+
+    public void setTurnAroundTime(int turnAroundTime) {
+        this.turnAroundTime = turnAroundTime;
+    }
+
+    public int getCompletedTime() {
+        return completedTime;
+    }
+
+    public void setComplatedTime(int completedTime) {
+        this.completedTime = completedTime;
     }
 
     @Override
     public String toString() {
         return "Process{" +
-                "pid='" + pid + '\'' +
-                ", at=" + at +
-                ", bt=" + bt +
+                "pID='" + pID + '\'' +
+                ", arrivalTime=" + arrivalTime +
+                ", burstTime=" + burstTime +
+                ", waitingTime=" + waitingTime +
+                ", turnAroundTime=" + turnAroundTime +
+                ", completedTime=" + completedTime +
                 '}';
     }
 }

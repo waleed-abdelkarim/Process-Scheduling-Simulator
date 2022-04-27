@@ -3,14 +3,13 @@ package CSC227_Project;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.embed.swing.SwingNode;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -19,13 +18,14 @@ import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.DateTickUnit;
 import org.jfree.chart.axis.DateTickUnitType;
 import org.jfree.chart.plot.CategoryPlot;
+import org.jfree.chart.renderer.category.GanttRenderer;
 import org.jfree.data.gantt.GanttCategoryDataset;
 import org.jfree.data.gantt.Task;
 import org.jfree.data.gantt.TaskSeries;
 import org.jfree.data.gantt.TaskSeriesCollection;
 import org.jfree.data.time.SimpleTimePeriod;
-import org.jfree.ui.RefineryUtilities;
 
+import java.awt.*;
 import java.io.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -34,41 +34,99 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Controller implements Initializable {
-    @FXML
-    private Label SRTF_File_Label;
-    @FXML
-    private Label SRTF_AWT_Label;
-    @FXML
-    private Label SRTF_ATAT_Label;
-    @FXML
-    private TableView<Process> SRTF_Input_Table = new TableView<Process>();
-    @FXML
-    private TableView<Process> SRTF_Output_Table = new TableView<Process>();
-    @FXML
-    private TableColumn<Process, String> SRTF_Output_PID;
-    @FXML
-    private TableColumn<Process, String> SRTF_Input_PID;
-    @FXML
-    private TableColumn<Process, Integer> SRTF_AT;
-    @FXML
-    private TableColumn<Process, Integer> SRTF_BT;
-    @FXML
-    private TableColumn<Process, Integer> SRTF_WT;
-    @FXML
-    private TableColumn<Process, Integer> SRTF_TAT;
-    @FXML
-    private ScrollPane SRTF_Gantt;
+
+    public TableColumn<Process, Integer> SRTF_WT;
+    public TableColumn<Process, Integer> SRTF_TAT;
+    public TableColumn<Process, Integer> SRTF_CT;
+    public TableColumn<Process, Integer> SRTF_AT;
+    public  TableColumn<Process, Integer> SRTF_BT;
+    public Label SRTF_File_Label;
+    public TableView<Process> SRTF_Output_Table;
+    public TableColumn<Process, String> SRTF_Output_PID;
+    public TableView<Process> SRTF_Input_Table;
+    public TableColumn<Process, String> SRTF_Input_PID;
+    public Label SRTF_AWT_Label;
+    public Label SRTF_ATAT_Label;
+    public Label SRTF_ACT_Label;
+    public ScrollPane SRTF_Gantt;
+    // RR
+    public TableColumn<Process, Integer> RR_WT;
+    public TableColumn<Process, Integer> RR_TAT;
+    public TableColumn<Process, Integer> RR_CT;
+    public TableColumn<Process, Integer> RR_AT;
+    public TableColumn<Process, Integer> RR_BT;
+    public Label RR_File_Label;
+    public TableView<Process> RR_Output_Table;
+    public TableColumn<Process, String> RR_Output_PID;
+    public TableView<Process> RR_Input_Table;
+    public TableColumn<Process, String> RR_Input_PID;
+    public Label RR_AWT_Label;
+    public Label RR_ATAT_Label;
+    public Label RR_ACT_Label;
+    public TextField RR_Input;
+    public Label RR_Quantom_Label;
+    public ScrollPane RR_Gantt;
+
+
+    private boolean first = true;
+    private   Gantt g = null;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        SRTF_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
-        SRTF_Output_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pid"));
-        SRTF_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("at"));
-        SRTF_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("bt"));
-        SRTF_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("wt"));
-        SRTF_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("tat"));
+        SRTF_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        SRTF_Output_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        SRTF_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("arrivalTime"));
+        SRTF_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("burstTime"));
+        SRTF_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("waitingTime"));
+        SRTF_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("turnAroundTime"));
+        SRTF_CT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("completedTime"));
+        RR_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        RR_Output_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        RR_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("arrivalTime"));
+        RR_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("burstTime"));
+        RR_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("waitingTime"));
+        RR_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("turnAroundTime"));
+        RR_CT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("completedTime"));
     }
 
     Methods method = new Methods();
+
+    @FXML
+    protected void  RRFileChooser(ActionEvent event){
+        if (!first){
+            restart();
+        }
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+        File file = fc.showOpenDialog(null);
+        try {
+            method.readForRR(file.toPath().toString());
+            RR_Input_Table.getItems().addAll(method.processesRR);
+            RR_Output_Table.getItems().addAll(method.processesRR);
+        } catch (Exception e) {
+            RR_File_Label.setText("No File Selected");
+        }
+        first = false;
+    }
+
+    @FXML
+    protected void RunRR(ActionEvent event){
+        if (!first){
+            runRestart();
+        }
+        try {
+            int quantum = Integer.parseInt(RR_Input.getText());
+            method.RR(quantum);
+            RR_Input_Table.refresh();
+            RR_Output_Table.refresh();
+            g = new Gantt(method.Boxes,method.processesRR.size(),RR_Gantt);
+            first = false;
+            RR_Quantom_Label.setText("Your Quantum number is "+ quantum);
+        }catch (Exception e){
+            RR_Quantom_Label.setText("Please enter valid quantum number");
+        }
+
+
+    }
 
     @FXML
     protected void fileChooser(ActionEvent event) {
@@ -77,54 +135,68 @@ public class Controller implements Initializable {
 
     @FXML
     protected void SRTFFileChooser(ActionEvent event) {
+        if (!first){
+            restart();
+        }
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         File file = fc.showOpenDialog(null);
         try {
             method.readForSRTF(file.toPath().toString());
-            method.findavgTime();
+            method.SRTF();
             SRTF_Input_Table.getItems().addAll(method.processesSRTF);
             SRTF_Output_Table.getItems().addAll(method.processesSRTF);
-            for(int i =0;i<method.Boxes.size();i++){
-                System.out.print(method.Boxes.get(i).toString());
-            }
-            Gantt g = new Gantt(method.Boxes);
+            g = new Gantt(method.Boxes,method.processesSRTF.size(),SRTF_Gantt);
         } catch (Exception e) {
-            e.printStackTrace();
             SRTF_File_Label.setText("No File Selected");
         }
+        first = false;
 
     }
 
-    /**
-     * class CPU {
-     * String pid; // Process ID
-     * int burstTime; // Burst Time
-     * int arrivalTime; // Arrival Time
-     * int num_of_processes = 0;
-     * <p>
-     * public CPU(String pid, int arrivalTime, int burstTime) {
-     * this.pid = pid;
-     * this.burstTime = burstTime;
-     * this.arrivalTime = arrivalTime;
-     * }
-     * }
-     **/
+    private void runRestart(){
+        RR_AWT_Label.setText("Average waiting time:  ");
+        RR_ATAT_Label.setText("Average turn around time:  ");
+        RR_ACT_Label.setText("Average completion time:  ");
+        RR_Gantt.setContent(null);
+        method.Boxes.clear();
+    }
+    private void restart(){
+        SRTF_File_Label.setText("There is no file selected");
+        SRTF_AWT_Label.setText("Average waiting time:  ");
+        SRTF_ACT_Label.setText("Average completion time:  ");
+        SRTF_ATAT_Label.setText("Average turn around time:  ");
+        SRTF_Input_Table.getItems().clear();
+        SRTF_Output_Table.getItems().clear();
+        SRTF_Gantt.setContent(null);
+        method.processesSRTF.clear();
+        method.Boxes.clear();
+        RR_File_Label.setText("There is no file selected");
+        RR_Output_Table.getItems().clear();
+        RR_Input_Table.getItems().clear();
+        RR_AWT_Label.setText("Average waiting time:  ");
+        RR_ATAT_Label.setText("Average turn around time:  ");
+        RR_ACT_Label.setText("Average completion time:  ");
+        RR_Input.clear();
+//        RR_Quantom_Label;
+        method.processesRR.clear();
+        RR_Gantt.setContent(null);
+    }
 
     class Methods {
 
         LinkedList<Process> processesSRTF;// contain an information about every process
-        LinkedList<Process> list_of_processesRR;// contain an information about every process
+        LinkedList<Process> processesRR;// contain an information about every process
         LinkedList<Box> Boxes;
 
         public Methods() {
             Boxes = new LinkedList<Box>();
             processesSRTF = new LinkedList<Process>();
-            list_of_processesRR = new LinkedList<Process>();
+            processesRR = new LinkedList<Process>();
         }
 
         public void readForSRTF(String filePath) {
-            String pid; // Process ID
+            String pId; // Process ID
             int at; // Arrival Time
             int bt; // Burst Time
             int counter = 0;
@@ -137,10 +209,10 @@ public class Controller implements Initializable {
                     try { // this try will make reading with single point of failure
                         //PID,AT,BT
                         String[] process = read.split(",");
-                        pid = process[0];
+                        pId = process[0];
                         at = Integer.parseInt(process[1]);
                         bt = Integer.parseInt(process[2]);
-                        Process p = new Process(pid, at, bt);
+                        Process p = new Process(pId, at, bt);
                         processesSRTF.add(p);
                         successNum++;
                         counter++;
@@ -151,303 +223,271 @@ public class Controller implements Initializable {
             }
             SRTF_File_Label.setText("Number of process read: " + successNum);
         }
-        /*
-         public boolean readCSVforRR(String filePath) {
 
-         BufferedReader Reader = null;
-         String row = null;
-         boolean flag = true;
-         int pNum = 1;
+        public void readForRR(String filePath) {
+            String pId; // Process ID
+            int bt; // Burst Time
+            int counter = 0;
+            int successNum = 0;
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(filePath));
+                String read;
+                while (((read = reader.readLine()) != null) && counter < 30) {
+                    try { // this try will make reading with single point of failure
+                        //PID,AT,BT
+                        pId = read;
+                        bt = Integer.parseInt(reader.readLine());
+                        Process p = new Process(pId, bt);
+                        processesRR.add(p);
+                        successNum++;
+                        counter++;
+                        System.out.println(processesRR.getLast().toString());
+                        SRTF_File_Label.setText("Number of process read: " + successNum);
+                    } catch (Exception e) {
+                        RR_File_Label.setText("File read with some record missing");
+                    }
+                }
+            } catch (Exception e) {
+                RR_File_Label.setText("No File Selected");
+            }
 
-         // try and catch block to read the file using BufferedReader & FileReader
-         try {
-         Reader = new BufferedReader(new FileReader(filePath));
-         } catch (FileNotFoundException e1) {
-         System.out.println("ERROR --FILE NOT FOUND	");
-         flag = false;
-         } finally {
-         if (flag)
-         ;
-         else
-         return false;
-         }
-
-         // try and catch block to read the every row in the file and split it into
-         // attributes then create a row object and store it in a list
-         // if an error occurs flag will be set to false then false will be the returned
-         try {
-         while (true) {
-         row = Reader.readLine();
-
-         if (row == null)
-         break;
-         if (!Character.isDigit(row.charAt(0)))
-         continue;
-         String[] array_of_data = row.split(",");
-
-         for (int i = 0; i < array_of_data.length; i++) {
-
-         if (array_of_data[i].isEmpty()) {
-
-         return false;
-
-         }
-
-         }
-
-         CPU newRow = new CPU(pNum, pNum++, Integer.parseInt(array_of_data[0]));
-
-         this.list_of_processesRR.add(newRow);
-
-         }
-         } catch (IOException e) {
-         System.out.println("ERROR IN READING LINE FROM THE FILE OCCURS");
-         flag = false;
-         } finally {
-         if (flag)
-         ;
-         else
-         return false;
-         }
-
-         // try and catch block to close the buffer
-         try {
-         Reader.close();
-
-         } catch (IOException e) {
-         System.out.println("ERROR IN CLOSING FILE OCCURS");
-         flag = false;
-         } finally {
-         if (flag)
-         ;
-         else
-         return false;
-         }
-
-         return true;
-
-         }
-         **/
-
-        /*
-         public void print() {
-         for (CPU row : processesSRTF) {
-         System.out.println("PID = " + row.getPid() + ", Arrival Time = " + row.getArrivalTime() + ", Burst Time = "
-         + row.getBurstTime());
-         }
-         }
-         **/
+        }
 
         /* SRTF **/
 
 
-        void findWaitingTime(ArrayList<Integer> waitingTime) {
-           LinkedList<Integer> remainingTime = new LinkedList<>();
+        void SRTF() {
+            LinkedList<Integer> remainingTime = new LinkedList<>();
 
-            // Copy the burst time into remainingTime
-            for (Process process : processesSRTF) remainingTime.add(process.getBt());
+            for (Process process : processesSRTF) {
+                remainingTime.add(process.getBurstTime());
+            }
 
-            int complete = 0;
-            int time = 0;
+            int complete = 0, timer = 0, shortest = 0;
             int min = Integer.MAX_VALUE;
-            int shortest = 0, finish_time;
+            int finishTime;
             Box b = null;
-            // Process until all processes gets completed
-            while (complete != processesSRTF.size()) {
 
-                // Find process with minimum remaining time among the processes that arrives till the current time`
-                for (int i = 0; i < processesSRTF.size(); i++) {
-                    if ((processesSRTF.get(i).getAt() <= time) && (remainingTime.get(i) < min) && remainingTime.get(i) > 0) {
+            while (complete != processesSRTF.size()) { // to ensure all processes completed
+
+                for (int i = 0; i < processesSRTF.size(); i++) { // find minimum remaining time
+                    if ((processesSRTF.get(i).getArrivalTime() <= timer) && (remainingTime.get(i) < min) && remainingTime.get(i) > 0) {
                         min = remainingTime.get(i);
                         shortest = i;
                     }
                 }
-                boolean exist = false;
-                for (Box box : Boxes) {
-                    if (box.pid.equalsIgnoreCase(processesSRTF.get(shortest).getPid())) {
-                        exist = true;
-                        break;
+                { // this block will help us make the Gantt Chart
+                    boolean exist = false;
+                    for (Box box : Boxes) {
+                        if (box.pid.equalsIgnoreCase(processesSRTF.get(shortest).getPID())) {
+                            exist = true;
+                            break;
+                        }
+                    }
+                    if (!exist || !Boxes.getLast().pid.equalsIgnoreCase(processesSRTF.get(shortest).getPID())) {
+                        b = new Box();
+                        b.start = timer;
+                        b.pid = processesSRTF.get(shortest).getPID();
+                        b.finish = timer + 1;
+                        Boxes.add(b);
+                    } else {
+                        assert b != null;
+                        b.finish = timer + 1;
                     }
                 }
-                if (!exist || !Boxes.getLast().pid.equalsIgnoreCase(processesSRTF.get(shortest).pid)) {
-                    b = new Box();
-                    b.start = time;
-                    b.pid = processesSRTF.get(shortest).getPid();
-                    b.finish = time + 1;
-                    Boxes.add(b);
-                }
-                else {
-                    assert b != null;
-                    b.finish = time+1;
-                }
 
+                remainingTime.set(shortest, remainingTime.get(shortest) - 1);
 
-                // Reduce remaining time by one
-                remainingTime.set(shortest,remainingTime.get(shortest)-1);
-
-                // If a process gets completely executed
-                if (remainingTime.get(shortest) == 0) {
+                if (remainingTime.get(shortest) == 0) { // if process finished
                     min = Integer.MAX_VALUE;
-                    // Increment complete
                     complete++;
-                    // Find finish time of current process
-                    finish_time = time + 1;
-                    // Calculate waiting time
-                    int wt = finish_time - processesSRTF.get(shortest).getBt() - processesSRTF.get(shortest).getAt();
-                    waitingTime.set(shortest, wt);
-                    processesSRTF.get(shortest).setWt(wt);
-                    if (waitingTime.get(shortest) < 0)
-                        waitingTime.set(shortest,0);
+                    finishTime = timer + 1; // finish time of process
+                    int wt = finishTime - processesSRTF.get(shortest).getBurstTime() - processesSRTF.get(shortest).getArrivalTime();
+                    int tat = processesSRTF.get(shortest).getBurstTime() + wt;
+                    processesSRTF.get(shortest).setTurnAroundTime(tat);
+                    processesSRTF.get(shortest).setWaitingTime(wt);
+                    processesSRTF.get(shortest).setComplatedTime(finishTime);
+                    if (processesSRTF.get(shortest).getWaitingTime() < 0)
+                        processesSRTF.get(shortest).setWaitingTime(0);
                 }
-                // Increment time
-                time++;
+                // Increment timer
+                timer++;
             }
+            // to calculate the average
+            int totalWt = 0, totalTat = 0, totalCt = 0;
+
+            for (Process process : processesSRTF) {
+                totalWt += process.getWaitingTime();
+                totalTat += process.getTurnAroundTime();
+                totalCt += process.getCompletedTime();
+
+            }
+
+            BigDecimal totalCT = new BigDecimal((double) totalCt / (double) processesSRTF.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalTAT = new BigDecimal((double) totalTat / (double) processesSRTF.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalWT = new BigDecimal((double) totalWt / (double) processesSRTF.size()).setScale(2, RoundingMode.HALF_EVEN);
+            SRTF_AWT_Label.setText(SRTF_AWT_Label.getText() + totalWT + " ms");
+            SRTF_ATAT_Label.setText(SRTF_ATAT_Label.getText() + totalTAT + " ms");
+            SRTF_ACT_Label.setText(SRTF_ACT_Label.getText() + totalCT + " ms");
+
         }
-
-
-        // Method to calculate turn around time
-        void findTurnAroundTime(ArrayList<Integer> TurnAroundTime) {
-            // calculating turnaround time by adding
-            // bt[i] + wt[i]
-            int tat;
-            for (int i = 0; i < processesSRTF.size(); i++) {
-                tat = processesSRTF.get(i).getBt() + processesSRTF.get(i).getWt();
-                processesSRTF.get(i).setTat(tat);
-                TurnAroundTime.set(i,tat);
-            }
-        }
-
-        // Method to calculate average time
-        void findavgTime() {
-            ArrayList<Integer> waitingTime = new ArrayList<>(processesSRTF.size());
-            ArrayList<Integer> TurnAroundTime =new ArrayList<>(processesSRTF.size());
-            for (int i =0;i<processesSRTF.size();i++){
-                waitingTime.add(0);
-                TurnAroundTime.add(0);
-            }
-            int total_wt = 0, total_tat = 0;
-
-            // Function to find waiting time of all
-            // processes
-            findWaitingTime(waitingTime);
-
-            // Function to find turn around time for
-            // all processes
-            findTurnAroundTime(TurnAroundTime);
-            //             Calculate total waiting time and
-//             total turnaround time
-            for (int i = 0; i < processesSRTF.size(); i++) {
-                total_wt += waitingTime.get(i);
-                total_tat += TurnAroundTime.get(i);
-            }
-
-            BigDecimal totalWt = new BigDecimal((double) total_wt / (double) processesSRTF.size()).setScale(2, RoundingMode.HALF_EVEN);
-            BigDecimal totalTat = new BigDecimal((double) total_tat / (double) processesSRTF.size()).setScale(2, RoundingMode.HALF_EVEN);
-            SRTF_AWT_Label.setText(SRTF_AWT_Label.getText() + totalWt +" ms");
-            SRTF_ATAT_Label.setText(SRTF_ATAT_Label.getText() + totalTat +" ms");
-        }
-
-
 
         /* Round Robin **/
 
-        /*
-         static void RoundRobin(Process p[], int qt, int n) {
-         int i, count = 0, temp, sq = 0, wt[], tat[], rem_bt[];
-         float awt = 0, atat = 0;
-         tat = new int[30];
-         rem_bt = new int[30];
-         wt = new int[30];
-         for (i = 0; i < n; i++) {
-         rem_bt[i] = p[i].bt;
-         }
-         while (true) {
-         for (i = 0, count = 0; i < n; i++) {
-         temp = qt;
-         if (rem_bt[i] == 0) {
-         count++;
-         continue;
-         }
-         if (rem_bt[i] > qt)
-         rem_bt[i] = rem_bt[i] - qt;
-         else if (rem_bt[i] >= 0) {
-         temp = rem_bt[i];
-         rem_bt[i] = 0;
-         }
-         sq = sq + temp;
-         tat[i] = sq;
-         }
-         if (n == count)
-         break;
-         }
-         System.out.print("--------------------------------------------------------------------------------");
-         System.out.print("\nProcess\tBurst Time\tTurnaround Time\tWaiting Time\n");
-         System.out.print("--------------------------------------------------------------------------------");
-         for (i = 0; i < n; i++) {
-         wt[i] = tat[i] - p[i].bt;
-         awt = awt + wt[i];
-         atat = atat + tat[i];
-         System.out.print("\n " + p[i].pid + "\t " + p[i].bt + "\t\t " + tat[i] + "\t\t " + wt[i] + "\n");
-         }
-         awt = awt / n;
-         atat = atat / n;
-         System.out.println("\nAverage waiting Time = " + awt + "\n");
-         System.out.println("Average turnaround time = " + atat);
+        void RR(int quantum) {
+            LinkedList<Integer> remainingTime = new LinkedList<>();
+            for (Process process : processesRR) {
+                remainingTime.add(process.getBurstTime());
+            }
+            int complete = 0, timer = 0;
+            Box b = null;
+            while (complete != processesRR.size()) { // to ensure all processes completed
+                for (int i = 0; i < processesRR.size(); i++) {
+                    // If burst time of a process is greater than 0
+                    // then only need to process further
+                    if (remainingTime.get(i) > 0) {
+                        if (remainingTime.get(i) > quantum) {
+                            // Increase the value of t i.e. shows
+                            // how much time a process has been processed
 
-         }
-         **/
+                            // Decrease the burst_time of current process
+                            // by quantum
+                            remainingTime.set(i, (remainingTime.get(i) - quantum));
+                            b = new Box();
+                            b.start = timer;
+                            b.pid = processesRR.get(i).getPID();
+                            timer+=quantum;
+                            b.finish = timer;
+                            Boxes.add(b);
+                        }
+                        // If burst time is smaller than or equal to
+                        // quantum. Last cycle for this process
+                        else {
+                            // Increase the value of t i.e. shows
+                            // how much time a process has been processed
+
+
+                            // Waiting time is current time minus time
+                            // used by this process
+                            processesRR.get(i).setWaitingTime(timer - processesRR.get(i).getBurstTime());
+                            b = new Box();
+                            b.start = timer;
+                            b.pid = processesRR.get(i).getPID();
+                            timer += remainingTime.get(i);
+                            b.finish = timer;
+                            Boxes.add(b);
+                            // As the process gets fully executed
+                            // make its remaining burst time = 0
+
+                            remainingTime.set(i, 0);
+                            complete++;
+                            int wt = b.finish - processesRR.get(i).getBurstTime() - processesRR.get(i).getArrivalTime();
+                            int tat = processesRR.get(i).getBurstTime() + wt;
+                            processesRR.get(i).setTurnAroundTime(tat);
+                            processesRR.get(i).setWaitingTime(wt);
+                            processesRR.get(i).setComplatedTime(b.finish);
+                            if (processesRR.get(i).getWaitingTime() < 0)
+                                processesRR.get(i).setWaitingTime(0);
+                        }
+                    }
+                }
+            }
+
+            // to calculate the average
+            int totalWt = 0, totalTat = 0, totalCt = 0;
+
+            for (Process process : processesRR) {
+                totalWt += process.getWaitingTime();
+                totalTat += process.getTurnAroundTime();
+                totalCt += process.getCompletedTime();
+
+            }
+
+            BigDecimal totalCT = new BigDecimal((double) totalCt / (double) processesRR.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalTAT = new BigDecimal((double) totalTat / (double) processesRR.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalWT = new BigDecimal((double) totalWt / (double) processesRR.size()).setScale(2, RoundingMode.HALF_EVEN);
+            RR_AWT_Label.setText(RR_AWT_Label.getText() + totalWT + " ms");
+            RR_ATAT_Label.setText(RR_ATAT_Label.getText() + totalTAT + " ms");
+            RR_ACT_Label.setText(RR_ACT_Label.getText() + totalCT + " ms");
+        }
     }
 
     class Gantt{
 
         private LinkedList<Controller.Box> drawList;
+        private int numberOfProcess;
+        private int lastMS;
 
-        public Gantt(LinkedList<Controller.Box> drawList) {
+        public Gantt(LinkedList<Controller.Box> drawList, int n, ScrollPane sp) {
             this.drawList = drawList;
+            this.numberOfProcess = n;
+            this.lastMS = drawList.getLast().finish;
             final GanttCategoryDataset dataset = createDataset();
             final JFreeChart chart = createChart(dataset);
-//            final ChartPanel chartPanel = new ChartPanel(chart);
-            ScrollPane scroll = new ScrollPane();
             final SwingNode chartSwingNode = new SwingNode();
             chartSwingNode.setContent(
                     new ChartPanel(chart)
             );
-            chartSwingNode.getContent().setPreferredSize(new java.awt.Dimension(850, 230));
-            SRTF_Gantt.setContent(chartSwingNode);
+            int width;
+            int height;
+            if (numberOfProcess <=5)
+                height = 240;
+            else if (numberOfProcess <=10)
+                height = 340;
+            else if (numberOfProcess <=15)
+                height = 440;
+            else if (numberOfProcess <=20)
+                height = 540;
+            else if (numberOfProcess <=25)
+                height = 690;
+            else
+                height = 790;
 
-//            chartPanel.setPreferredSize(new java.awt.Dimension(1100, 200));
+            if (lastMS <=50)
+                width = 800;
+            else if (lastMS <=100)
+                width = 1200;
+            else if (lastMS <=150)
+                width = 1800;
+            else if (lastMS <=200)
+                width = 2400;
+            else if (lastMS <=250)
+                width = 3000;
+            else
+                width = 2800;
+            chartSwingNode.getContent().setPreferredSize(new Dimension(width, height));
+            sp.setContent(chartSwingNode);
+            sp.setPrefSize(width+7, height+7);
+            Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+            sp.setMaxSize((size.width-50), (size.height/2.0));
         }
 
         public GanttCategoryDataset createDataset() {
             final TaskSeries s = new TaskSeries("Process");
             Task p ;
             LinkedList<Task> tasks = new LinkedList<>();
-            for (int i=0;i<drawList.size();i++){
-                System.out.println(drawList.get(i).toString());
-            }
             boolean exist = false;
-            for (int i=0;i<drawList.size();i++){
-                for (int j = 0;j <tasks.size();j++){
-                    if (tasks.get(j).getDescription().equalsIgnoreCase(drawList.get(i).pid)){
+            for (Box box : drawList) {
+                for (Task task : tasks) {
+                    if (task.getDescription().equalsIgnoreCase(box.pid)) {
                         exist = true;
                         break;
                     }
                 }
-                if(!exist) {
-                    p = new Task(drawList.get(i).pid, new SimpleTimePeriod(drawList.get(i).start, drawList.get(i).finish));
+                if (!exist) {
+                    p = new Task(box.pid, new SimpleTimePeriod(box.start, box.finish));
                     s.add(p);
                     tasks.add(p);
-                }
-                else {
+                } else {
                     Task u = null;
                     Task t = null;
-                    for (int j = 0;j<tasks.size();j++){
-                        if (tasks.get(j).getDescription().equalsIgnoreCase(drawList.get(i).pid)) {
-                            u = tasks.get(j);
-                            t = tasks.get(j);
+                    for (Task task : tasks) {
+                        if (task.getDescription().equalsIgnoreCase(box.pid)) {
+                            u = task;
+                            t = task;
                         }
                     }
-                    p = new Task(drawList.get(i).pid, new SimpleTimePeriod(drawList.get(i).start, drawList.get(i).finish));
+                    p = new Task(box.pid, new SimpleTimePeriod(box.start, box.finish));
                     assert u != null;
                     u.addSubtask(p);
                     u.addSubtask(t);
@@ -470,6 +510,7 @@ public class Controller implements Initializable {
                     true, // tooltips
                     false // urls
             );
+            chart.setBorderVisible(true);
 
             CategoryPlot plot = chart.getCategoryPlot();
             DateAxis axis = (DateAxis) plot.getRangeAxis();
@@ -477,9 +518,11 @@ public class Controller implements Initializable {
             axis.setTickUnit(new DateTickUnit(DateTickUnitType.MILLISECOND, 2));
             axis.setMinimumDate(new Date(0));
             if(drawList.getLast().finish%2==0)
-                axis.setMaximumDate(new Date(drawList.getLast().finish+1));
-            else
                 axis.setMaximumDate(new Date(drawList.getLast().finish));
+            else
+                axis.setMaximumDate(new Date(drawList.getLast().finish+1));
+            GanttRenderer renderer = (GanttRenderer) plot.getRenderer();
+            renderer.setDrawBarOutline(true);
             return chart;
         }
 
