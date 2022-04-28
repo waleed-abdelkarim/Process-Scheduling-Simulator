@@ -64,12 +64,27 @@ public class Controller implements Initializable {
     public Label RR_ATAT_Label;
     public Label RR_ACT_Label;
     public TextField RR_Input;
-    public Label RR_Quantom_Label;
+    public Label RR_Quantum_Label;
     public ScrollPane RR_Gantt;
-
+    //    Priority
+    public Label Priority_File_Label;
+    public TableView<Process> Priority_Output_Table;
+    public TableColumn<Process, String> Priority_Output_PID;
+    public TableColumn<Process, Integer> Priority_WT;
+    public TableColumn<Process, Integer> Priority_TAT;
+    public TableColumn<Process, Integer> Priority_CT;
+    public TableView<Process> Priority_Input_Table;
+    public TableColumn<Process, String> Priority_Input_PID;
+    public TableColumn<Process, Integer> Priority_AT;
+    public TableColumn<Process, Integer> Priority_BT;
+    public TableColumn<Process, Integer> Priority_P;
+    public Label Priority_AWT_Label;
+    public Label Priority_ATAT_Label;
+    public Label Priority_ACT_Label;
+    public ScrollPane Priority_Gantt;
 
     private boolean first = true;
-    private   Gantt g = null;
+    private Gantt g = null;
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         SRTF_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
@@ -86,10 +101,39 @@ public class Controller implements Initializable {
         RR_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("waitingTime"));
         RR_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("turnAroundTime"));
         RR_CT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("completedTime"));
+        Priority_Input_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        Priority_Output_PID.setCellValueFactory(new PropertyValueFactory<Process, String>("pID"));
+        Priority_AT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("arrivalTime"));
+        Priority_BT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("burstTime"));
+        Priority_WT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("waitingTime"));
+        Priority_TAT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("turnAroundTime"));
+        Priority_CT.setCellValueFactory(new PropertyValueFactory<Process, Integer>("completedTime"));
+        Priority_P.setCellValueFactory(new PropertyValueFactory<Process, Integer>("priority"));
     }
+
 
     Methods method = new Methods();
 
+    @FXML
+    protected void SRTFFileChooser(ActionEvent event) {
+        if (!first){
+            restart();
+        }
+        FileChooser fc = new FileChooser();
+        fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
+        File file = fc.showOpenDialog(null);
+        try {
+            method.readForSRTF(file.toPath().toString());
+            method.SRTF();
+            SRTF_Input_Table.getItems().addAll(method.processesSRTF);
+            SRTF_Output_Table.getItems().addAll(method.processesSRTF);
+            g = new Gantt(method.Boxes,method.processesSRTF.size(),SRTF_Gantt);
+        } catch (Exception e) {
+            SRTF_File_Label.setText("No File Selected");
+        }
+        first = false;
+
+    }
     @FXML
     protected void  RRFileChooser(ActionEvent event){
         if (!first){
@@ -120,21 +164,16 @@ public class Controller implements Initializable {
             RR_Output_Table.refresh();
             g = new Gantt(method.Boxes,method.processesRR.size(),RR_Gantt);
             first = false;
-            RR_Quantom_Label.setText("Your Quantum number is "+ quantum);
+            RR_Quantum_Label.setText("Your Quantum number is "+ quantum);
         }catch (Exception e){
-            RR_Quantom_Label.setText("Please enter valid quantum number");
+            RR_Quantum_Label.setText("Please enter valid quantum number");
         }
 
 
     }
 
     @FXML
-    protected void fileChooser(ActionEvent event) {
-
-    }
-
-    @FXML
-    protected void SRTFFileChooser(ActionEvent event) {
+    protected void PriorityFileChooser(ActionEvent event) {
         if (!first){
             restart();
         }
@@ -142,16 +181,15 @@ public class Controller implements Initializable {
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("TXT files (*.txt)", "*.txt"));
         File file = fc.showOpenDialog(null);
         try {
-            method.readForSRTF(file.toPath().toString());
-            method.SRTF();
-            SRTF_Input_Table.getItems().addAll(method.processesSRTF);
-            SRTF_Output_Table.getItems().addAll(method.processesSRTF);
-            g = new Gantt(method.Boxes,method.processesSRTF.size(),SRTF_Gantt);
+            method.readForPriority(file.toPath().toString());
+            method.Priority();
+            Priority_Input_Table.getItems().addAll(method.processesPriority);
+            Priority_Output_Table.getItems().addAll(method.processesPriority);
+            g = new Gantt(method.Boxes,method.processesPriority.size(),Priority_Gantt);
         } catch (Exception e) {
-            SRTF_File_Label.setText("No File Selected");
+            Priority_File_Label.setText("No File Selected");
         }
         first = false;
-
     }
 
     private void runRestart(){
@@ -178,25 +216,35 @@ public class Controller implements Initializable {
         RR_ATAT_Label.setText("Average turn around time:  ");
         RR_ACT_Label.setText("Average completion time:  ");
         RR_Input.clear();
-//        RR_Quantom_Label;
+        RR_Quantum_Label.setText("There is no quantum number");
         method.processesRR.clear();
         RR_Gantt.setContent(null);
+        Priority_File_Label.setText("There is no file selected");
+        Priority_AWT_Label.setText("Average waiting time:  ");
+        Priority_ACT_Label.setText("Average completion time:  ");
+        Priority_ATAT_Label.setText("Average turn around time:  ");
+        Priority_Input_Table.getItems().clear();
+        Priority_Output_Table.getItems().clear();
+        Priority_Gantt.setContent(null);
+        method.processesPriority.clear();
     }
 
     class Methods {
 
         LinkedList<Process> processesSRTF;// contain an information about every process
         LinkedList<Process> processesRR;// contain an information about every process
+        LinkedList<Process> processesPriority;
         LinkedList<Box> Boxes;
 
         public Methods() {
             Boxes = new LinkedList<Box>();
             processesSRTF = new LinkedList<Process>();
             processesRR = new LinkedList<Process>();
+            processesPriority = new LinkedList<Process>();
         }
 
         public void readForSRTF(String filePath) {
-            String pId; // Process ID
+            String pId; // CSC227_Project.Process ID
             int at; // Arrival Time
             int bt; // Burst Time
             int counter = 0;
@@ -225,7 +273,7 @@ public class Controller implements Initializable {
         }
 
         public void readForRR(String filePath) {
-            String pId; // Process ID
+            String pId; // CSC227_Project.Process ID
             int bt; // Burst Time
             int counter = 0;
             int successNum = 0;
@@ -241,8 +289,7 @@ public class Controller implements Initializable {
                         processesRR.add(p);
                         successNum++;
                         counter++;
-                        System.out.println(processesRR.getLast().toString());
-                        SRTF_File_Label.setText("Number of process read: " + successNum);
+                        RR_File_Label.setText("Number of process read: " + successNum);
                     } catch (Exception e) {
                         RR_File_Label.setText("File read with some record missing");
                     }
@@ -253,9 +300,38 @@ public class Controller implements Initializable {
 
         }
 
+        public void readForPriority(String filePath){
+            String pId; // CSC227_Project.Process ID
+            int bt; // Burst Time
+            int pr;
+            int successNum = 0;
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader(filePath));
+                String read;
+                while (((read = reader.readLine()) != null) && successNum < 30) {
+                    try { // this try will make reading with single point of failure
+                        //PID,AT,BT
+                        pId = read;
+                        read = reader.readLine();
+                        String[] l = read.split(",");
+                        bt = Integer.parseInt(l[0]);
+                        pr = Integer.parseInt(l[1]);
+                        if (pr < 1 || pr > 4)
+                            break;
+                        Process p = new Process(pId, bt, pr, 0);
+                        processesPriority.add(p);
+                        successNum++;
+                        Priority_File_Label.setText("Number of process read: " + successNum);
+                    } catch (Exception ignored) {
+                    }
+                }
+            } catch (Exception e) {
+                Priority_File_Label.setText("No File Selected");
+            }
+        }
+
+
         /* SRTF **/
-
-
         void SRTF() {
             LinkedList<Integer> remainingTime = new LinkedList<>();
 
@@ -343,15 +419,8 @@ public class Controller implements Initializable {
             Box b = null;
             while (complete != processesRR.size()) { // to ensure all processes completed
                 for (int i = 0; i < processesRR.size(); i++) {
-                    // If burst time of a process is greater than 0
-                    // then only need to process further
-                    if (remainingTime.get(i) > 0) {
-                        if (remainingTime.get(i) > quantum) {
-                            // Increase the value of t i.e. shows
-                            // how much time a process has been processed
-
-                            // Decrease the burst_time of current process
-                            // by quantum
+                    if (remainingTime.get(i) > 0) { // process not completed
+                        if (remainingTime.get(i) > quantum) { // not last round
                             remainingTime.set(i, (remainingTime.get(i) - quantum));
                             b = new Box();
                             b.start = timer;
@@ -360,25 +429,13 @@ public class Controller implements Initializable {
                             b.finish = timer;
                             Boxes.add(b);
                         }
-                        // If burst time is smaller than or equal to
-                        // quantum. Last cycle for this process
-                        else {
-                            // Increase the value of t i.e. shows
-                            // how much time a process has been processed
-
-
-                            // Waiting time is current time minus time
-                            // used by this process
-                            processesRR.get(i).setWaitingTime(timer - processesRR.get(i).getBurstTime());
+                        else { // last round (completed)
                             b = new Box();
                             b.start = timer;
                             b.pid = processesRR.get(i).getPID();
                             timer += remainingTime.get(i);
                             b.finish = timer;
                             Boxes.add(b);
-                            // As the process gets fully executed
-                            // make its remaining burst time = 0
-
                             remainingTime.set(i, 0);
                             complete++;
                             int wt = b.finish - processesRR.get(i).getBurstTime() - processesRR.get(i).getArrivalTime();
@@ -392,15 +449,12 @@ public class Controller implements Initializable {
                     }
                 }
             }
-
             // to calculate the average
             int totalWt = 0, totalTat = 0, totalCt = 0;
-
             for (Process process : processesRR) {
                 totalWt += process.getWaitingTime();
                 totalTat += process.getTurnAroundTime();
                 totalCt += process.getCompletedTime();
-
             }
 
             BigDecimal totalCT = new BigDecimal((double) totalCt / (double) processesRR.size()).setScale(2, RoundingMode.HALF_EVEN);
@@ -410,8 +464,51 @@ public class Controller implements Initializable {
             RR_ATAT_Label.setText(RR_ATAT_Label.getText() + totalTAT + " ms");
             RR_ACT_Label.setText(RR_ACT_Label.getText() + totalCT + " ms");
         }
-    }
 
+        void Priority() {
+            int complete = 0, timer = 0;
+            Box b = null;
+            processesPriority.sort(new Comparator<Process>() {
+                @Override
+                public int compare(Process o1, Process o2) {
+                    return o1.getPriority() - o2.getPriority();
+                }
+            });
+            while (complete != processesPriority.size()) { // to ensure all processes completed
+                for (Process process : processesPriority) {
+                    b = new Box();
+                    b.start = timer;
+                    b.pid = process.getPID();
+                    timer += process.getBurstTime();
+                    b.finish = timer;
+                    Boxes.add(b);
+                    complete++;
+                    int wt = b.start - process.getArrivalTime();
+                    int tat = process.getBurstTime() + wt;
+                    process.setTurnAroundTime(tat);
+                    process.setWaitingTime(wt);
+                    process.setComplatedTime(b.finish);
+                    if (process.getWaitingTime() < 0)
+                        process.setWaitingTime(0);
+                }
+                }
+            // to calculate the average
+            int totalWt = 0, totalTat = 0, totalCt = 0;
+
+            for (Process process : processesPriority) {
+                totalWt += process.getWaitingTime();
+                totalTat += process.getTurnAroundTime();
+                totalCt += process.getCompletedTime();
+            }
+
+            BigDecimal totalCT = new BigDecimal((double) totalCt / (double) processesPriority.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalTAT = new BigDecimal((double) totalTat / (double) processesPriority.size()).setScale(2, RoundingMode.HALF_EVEN);
+            BigDecimal totalWT = new BigDecimal((double) totalWt / (double) processesPriority.size()).setScale(2, RoundingMode.HALF_EVEN);
+             Priority_AWT_Label.setText(Priority_AWT_Label.getText() + totalWT + " ms");
+             Priority_ATAT_Label.setText(Priority_ATAT_Label.getText() + totalTAT + " ms");
+             Priority_ACT_Label.setText(Priority_ACT_Label.getText() + totalCT + " ms");
+        }
+        }
     class Gantt{
 
         private LinkedList<Controller.Box> drawList;

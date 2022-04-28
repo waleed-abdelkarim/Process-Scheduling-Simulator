@@ -3,8 +3,6 @@ package CSC227_Project;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-
-import java.awt.*;
 import java.io.IOException;
 
 public class Application extends javafx.application.Application {
