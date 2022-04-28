@@ -1,18 +1,27 @@
 package CSC227_Project;
 
 public  class Process {
-    String pID; // CSC227_Project.Process ID
-    int arrivalTime; // Arrival Time
-    int burstTime; // Burst Time
+    String pID;
+    int arrivalTime;
+    int burstTime;
     int waitingTime;
     int turnAroundTime;
-    int completedTime;
     int priority;
+
+    int completedTime;
 
     public Process(String pID, int arrivalTime, int burstTime) {
         this.pID = pID;
         this.arrivalTime = arrivalTime;
         this.burstTime = burstTime;
+    }
+
+    public int getCompletedTime() {
+        return completedTime;
+    }
+
+    public void setCompletedTime(int completedTime) {
+        this.completedTime = completedTime;
     }
 
     public Process(String pID, int burstTime) {
@@ -75,14 +84,6 @@ public  class Process {
         this.turnAroundTime = turnAroundTime;
     }
 
-    public int getCompletedTime() {
-        return completedTime;
-    }
-
-    public void setComplatedTime(int completedTime) {
-        this.completedTime = completedTime;
-    }
-
     @Override
     public String toString() {
         return "CSC227_Project.Process{" +
@@ -91,7 +92,6 @@ public  class Process {
                 ", burstTime=" + burstTime +
                 ", waitingTime=" + waitingTime +
                 ", turnAroundTime=" + turnAroundTime +
-                ", completedTime=" + completedTime +
                 ", priority=" + priority +
                 '}';
     }

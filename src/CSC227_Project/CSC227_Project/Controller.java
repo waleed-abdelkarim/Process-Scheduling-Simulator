@@ -382,7 +382,7 @@ public class Controller implements Initializable {
                     int tat = processesSRTF.get(shortest).getBurstTime() + wt;
                     processesSRTF.get(shortest).setTurnAroundTime(tat);
                     processesSRTF.get(shortest).setWaitingTime(wt);
-                    processesSRTF.get(shortest).setComplatedTime(finishTime);
+                    processesSRTF.get(shortest).setCompletedTime(finishTime);
                     if (processesSRTF.get(shortest).getWaitingTime() < 0)
                         processesSRTF.get(shortest).setWaitingTime(0);
                 }
@@ -442,7 +442,7 @@ public class Controller implements Initializable {
                             int tat = processesRR.get(i).getBurstTime() + wt;
                             processesRR.get(i).setTurnAroundTime(tat);
                             processesRR.get(i).setWaitingTime(wt);
-                            processesRR.get(i).setComplatedTime(b.finish);
+                            processesRR.get(i).setCompletedTime(b.finish);
                             if (processesRR.get(i).getWaitingTime() < 0)
                                 processesRR.get(i).setWaitingTime(0);
                         }
@@ -487,7 +487,7 @@ public class Controller implements Initializable {
                     int tat = process.getBurstTime() + wt;
                     process.setTurnAroundTime(tat);
                     process.setWaitingTime(wt);
-                    process.setComplatedTime(b.finish);
+                    process.setCompletedTime(b.finish);
                     if (process.getWaitingTime() < 0)
                         process.setWaitingTime(0);
                 }
