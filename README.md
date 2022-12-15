@@ -8,6 +8,8 @@ This project will simulate some process scheduling algorithms:
 
 3-Round Robin
 
+this project may not work on an old version of java SDK.
+
 ## Screenshots
 
 1-Shortest Remaining Time First (SRTF)
